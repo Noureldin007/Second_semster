@@ -6,10 +6,174 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />    
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="style.css">
+    
     <title>Bottom nav</title>
 </head>
 <body>
+    <header class="header">
+        <nav class="nav">
+            <a href="home.html" class="nav__link active-link">
+                <i class="fas fa-home nav__icon"></i>
+                <span class="nav__text">Home</span>
+            </a>
+            <a href="floors.html" class="nav__link">
+                <i class="fa-solid fa-bars nav__icon"></i>
+                <span class="nav__text">Search</span>
+            </a>
+        </nav>
+    </header>
+    <section class="main">
+        <h1 class="project-name">EcoTech Home</h1>
+        <div class="head">
+            <h3 class="greet">Hi, <span id="name">Noureldin</span></h3>
+            <img src="imgs/unknown-person-icon-Image-from.png" alt="none" class="img">
+        </div>
+        <div class="info">
+            <a href="Temperature.html" class="link-temp"><div class="temperature box">
+                <img src="imgs/moon-removebg-preview.png" alt="Night" class="box-img close">
+                <img src="imgs/sun.png" alt="Day" class="box-img active">  <!--this will be edited using javascript -->
+                <div class="sensor">
+                    <p>Temperature</p>
+                    <div class="temp-value value">
+                        <p><span id="temp-inside-value">00.0</span>&deg;C</p>
+                    </div>
+                </div>
+            </div></a>
+            <div class="humidity box">
+                <img src="imgs/water-drop-removebg-preview.png" alt="water drops" class="box-img">
+                <div class="sensor">
+                        <p>Humidity</p>
+                    <div class="humidi-value value">
+                        <p><span id="humidity-value">00</span>%</p>
+                    </div>
+                </div>
+            </div>
+            <div class="air-quality box">
+                <img src="./imgs/wind-removebg-preview.png" alt="" class="box-img">
+                <div class="sensor">
+                        <p>Air Quality</p>
+                    <div class="air-quality-value value">
+                        <p><span id="air-quality">00</span>ppm</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="services">
+            <h3 class="title">Services</h3>
+            <div class="button-box">
+                <span id="lights" class="toggle-box inactive-button"><i class="fa-solid fa-lightbulb"></i></span>
+                <span id="fan" class="toggle-box fan inactive-button"><i class="fa-solid fa-fan"></i></span>
+            </div>
+        </div>
+    </section>
 
-    <script src="main.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+
+	<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+
+
+    <script type="module" defer>
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-app.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+      
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+          apiKey: "AIzaSyCsbb3hGkeoNbF04d8yjs4FXyCib81ediI",
+          authDomain: "data-base-83e01.firebaseapp.com",
+          databaseURL: "https://data-base-83e01-default-rtdb.firebaseio.com",
+          projectId: "data-base-83e01",
+          storageBucket: "data-base-83e01.appspot.com",
+          messagingSenderId: "1021017417849",
+          appId: "1:1021017417849:web:840fbc1f1f833cfe8c4ca8",
+          measurementId: "G-ZDJNZKSJLE"
+        };
+        // Initialize Firebase
+        // Initialize Firebase
+	    firebase.initializeApp(firebaseConfig);
+
+
+// getting reference to the database
+        var database = firebase.database();
+        var led_status = -1;
+var fan_status = -1;
+
+        // Reference to temperature and humidity nodes in database
+        const temperatureRef = database.ref('DHT_inside/Temperature');
+        const humidityRef = database.ref('DHT_inside/Humidity');
+        const airQualityRef = database.ref('MQ135');
+        const temperature = database.ref('DHT_outside/Temperature');
+
+        // Listen for changes in temperature node
+        temperatureRef.on('value', function(temperatureRef) {
+
+            document.getElementById('temp-inside-value').innerHTML = temperatureRef.val();
+        });
+        let light = document.getElementById("lights");
+        let fan = document.getElementById("fan");
+        // Listen for changes in humidity node
+        humidityRef.on('value', function(humidityRef) {
+            document.getElementById('humidity-value').innerHTML = humidityRef.val();
+        });
+        airQualityRef.on('value', function(airQualityRef) {
+            document.getElementById('air-quality').innerHTML = airQualityRef.val();
+        });
+        light.addEventListener("click", () => {
+    if (light.classList.contains("active-button")) {
+        light.classList.remove("active-button");
+        light.classList.add("inactive-button");
+        led_status = 0;
+    } else {
+        light.classList.remove("inactive-button");
+        light.classList.add("active-button");
+        led_status = 1;
+    }
+    console.log(led_status);
+
+    // Update the value in the Firebase database
+    database.ref("led_status").set(led_status);
+});
+
+fan.addEventListener("click", () => {
+    if (fan.classList.contains("active-button")) {
+        fan.classList.remove("active-button");
+        fan.classList.add("inactive-button");
+        fan_status = 0;
+    } else {
+        fan.classList.remove("inactive-button");
+        fan.classList.add("active-button");
+        fan_status = 1;
+    }
+
+    console.log(fan_status);
+
+    // Update the value in the Firebase database
+    database.ref("fan_status").set(fan_status);
+});
+
+// Request permission for notifications
+function requestNotificationPermission() {
+    if (Notification.permission !== "granted") {
+        Notification.requestPermission().then((permission) => {
+            if (permission === "granted") {
+                new Notification("Notification permission granted.");
+            } else {
+                console.log("Notification permission denied.");
+            }
+        });
+        
+    }
+}
+
+// Call the function to request notification permission
+requestNotificationPermission();
+
+
+
+
+    </script>
 </body>
 </html>
